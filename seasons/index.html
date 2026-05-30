@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Season Sorting Adventure</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+background:linear-gradient(180deg,#FFF7E6,#E8F6F3);
+}
+
+/* SCREEN */
+.screen{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+}
+
+.hidden{display:none;}
+
+/* LOGO */
+#logo{
+width:220px;
+animation:fade 2s infinite;
+}
+
+@keyframes fade{
+0%{opacity:.3}
+50%{opacity:1}
+100%{opacity:.3}
+}
+
+/* TOP BAR */
+#topBar{
+position:absolute;
+top:10px;
+width:100%;
+display:flex;
+justify-content:center;
+font-weight:bold;
+color:#6A1B9A;
+font-size:20px;
+}
+
+#scoreBox{
+position:absolute;
+top:10px;
+right:15px;
+font-size:20px;
+font-weight:bold;
+color:#1B5E20;
+}
+
+/* ITEM */
+#itemBox{
+position:absolute;
+top:90px;
+width:100%;
+display:flex;
+justify-content:center;
+text-align:center;
+flex-direction:column;
+}
+
+#itemImg{
+width:200px;
+height:200px;
+object-fit:contain;
+animation:drop .7s ease;
+}
+
+@keyframes drop{
+from{transform:translateY(-200px);opacity:0}
+to{transform:translateY(0);opacity:1}
+}
+
+#itemName{
+font-size:26px;
+font-weight:bold;
+color:#E67E22;
+margin-top:5px;
+}
+
+/* OPTIONS */
+#options{
+position:absolute;
+bottom:20px;
+width:100%;
+display:flex;
+justify-content:space-around;
+}
+
+.option{
+text-align:center;
+cursor:pointer;
+}
+
+.option img{
+width:90px;
+height:90px;
+object-fit:contain;
+}
+
+.option div{
+font-size:16px;
+font-weight:bold;
+color:#4E342E;
+}
+
+/* FEEDBACK */
+.feedback{
+position:absolute;
+top:45%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:120px;
+display:none;
+}
+
+#tick{color:#2ECC71;}
+#cross{color:#E74C3C;}
+
+#msg{
+position:absolute;
+top:60%;
+font-size:24px;
+font-weight:bold;
+}
+
+/* BUTTON */
+#tryAgain{
+display:none;
+position:absolute;
+top:68%;
+padding:12px 25px;
+border:none;
+border-radius:20px;
+background:#F5B041;
+color:white;
+font-size:18px;
+}
+
+/* END */
+#endScreen h1{
+color:#6A1B9A;
+}
+#finalScore{
+font-size:28px;
+font-weight:bold;
+color:#1B5E20;
+}
+#stars{
+font-size:40px;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+<div id="intro" class="screen">
+<img id="logo" src="assets/innovine-logo.png">
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen hidden">
+
+<div id="topBar">
+Match the item with correct season
+</div>
+
+<div id="scoreBox">⭐ <span id="score">0</span></div>
+
+<div id="itemBox">
+<img id="itemImg">
+<div id="itemName"></div>
+</div>
+
+<div id="tick" class="feedback">✅</div>
+<div id="cross" class="feedback">❌</div>
+
+<div id="msg"></div>
+<button id="tryAgain">Try Again</button>
+
+<div id="options">
+
+<div class="option" onclick="check('summer')">
+<img src="assets/summer.png">
+<div>Summer</div>
+</div>
+
+<div class="option" onclick="check('winter')">
+<img src="assets/winter.png">
+<div>Winter</div>
+</div>
+
+<div class="option" onclick="check('rainy')">
+<img src="assets/rainy.png">
+<div>Rainy</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- END -->
+<div id="end" class="screen hidden">
+<h1>🎉 Great Job! 🎉</h1>
+<div>Score: <span id="finalScore"></span></div>
+<div id="stars"></div>
+<button onclick="location.reload()">Replay</button>
+</div>
+
+<audio id="bgm" src="assets/backgroundmusic.mp3" loop></audio>
+<audio id="correct" src="assets/correct.mp3"></audio>
+<audio id="wrong" src="assets/wrong.mp3"></audio>
+
+<script>
+
+/* ITEMS */
+const items=[
+{name:"Sunglasses",img:"assets/sunglasses.png",season:"summer"},
+{name:"Cap",img:"assets/cap.png",season:"summer"},
+{name:"Hat",img:"assets/hat.png",season:"summer"},
+{name:"Slipper",img:"assets/slipper.png",season:"summer"},
+
+{name:"Sweater",img:"assets/sweater.png",season:"winter"},
+{name:"Woollen Cap",img:"assets/woollen-cap.png",season:"winter"},
+{name:"Hand Gloves",img:"assets/hand-gloves.png",season:"winter"},
+
+{name:"Umbrella",img:"assets/umbrella.png",season:"rainy"},
+{name:"Gumboots",img:"assets/gumboots.png",season:"rainy"},
+{name:"Raincoat",img:"assets/raincoat.png",season:"rainy"}
+];
+
+let gameItems=items.sort(()=>Math.random()-0.5);
+let i=0;
+let score=0;
+
+/* SPEECH */
+function speak(text,cb){
+let msg=new SpeechSynthesisUtterance(text);
+msg.rate=0.85;
+msg.onend=cb;
+speechSynthesis.speak(msg);
+}
+
+/* START */
+setTimeout(()=>{
+intro.classList.add("hidden");
+game.classList.remove("hidden");
+
+speak(
+"Hello little friend. Let us learn about seasons. Match each item with the correct season.",
+startGame
+);
+
+},5000);
+
+function startGame(){
+bgm.volume=0.3;
+bgm.play().catch(()=>{});
+showItem();
+}
+
+function showItem(){
+if(i>=gameItems.length){
+endGame();
+return;
+}
+
+resetUI();
+
+let it=gameItems[i];
+itemImg.src=it.img;
+itemName.textContent=it.name;
+}
+
+/* RESET */
+function resetUI(){
+tick.style.display="none";
+cross.style.display="none";
+msg.textContent="";
+tryAgain.style.display="none";
+}
+
+/* CHECK */
+function check(season){
+
+let it=gameItems[i];
+
+resetUI();
+
+if(season===it.season){
+
+correct.currentTime=0;
+correct.play();
+
+tick.style.display="block";
+msg.textContent="Great Job!";
+msg.style.color="#2ECC71";
+
+score++;
+document.getElementById("score").textContent=score;
+
+setTimeout(()=>{
+i++;
+showItem();
+},1200);
+
+}else{
+
+wrong.currentTime=0;
+wrong.play();
+
+cross.style.display="block";
+msg.textContent="Try Again";
+msg.style.color="#E74C3C";
+
+tryAgain.style.display="block";
+
+speak("Try again");
+
+}
+
+}
+
+/* TRY AGAIN */
+tryAgain.onclick=()=>{
+cross.style.display="none";
+tryAgain.style.display="none";
+msg.textContent="";
+};
+
+/* END */
+function endGame(){
+
+game.classList.add("hidden");
+end.classList.remove("hidden");
+
+finalScore.textContent=score+" / "+gameItems.length;
+
+if(score>=9)stars.textContent="⭐⭐⭐⭐⭐";
+else if(score>=7)stars.textContent="⭐⭐⭐⭐";
+else if(score>=5)stars.textContent="⭐⭐⭐";
+else stars.textContent="⭐⭐";
+
+speak("Wonderful. You completed the season game.");
+}
+
+</script>
+
+</body>
+</html>
