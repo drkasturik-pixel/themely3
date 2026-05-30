@@ -6,7 +6,6 @@
 <title>Season Sorting Adventure</title>
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -21,7 +20,7 @@ overflow:hidden;
 background:linear-gradient(180deg,#FFF7E6,#E8F6F3);
 }
 
-/* SCREEN */
+/* INTRO */
 .screen{
 position:absolute;
 width:100%;
@@ -34,7 +33,6 @@ flex-direction:column;
 
 .hidden{display:none;}
 
-/* LOGO */
 #logo{
 width:220px;
 animation:fade 2s infinite;
@@ -46,7 +44,7 @@ animation:fade 2s infinite;
 100%{opacity:.3}
 }
 
-/* TOP */
+/* TOP BAR */
 #topBar{
 position:absolute;
 top:10px;
@@ -69,35 +67,29 @@ color:#1B5E20;
 /* ITEM CENTER FIXED */
 #itemBox{
 position:absolute;
-top:80px;
-width:100%;
+top:50%;
+left:50%;
+transform:translate(-50%,-55%);
 display:flex;
 flex-direction:column;
-justify-content:center;
-align-items:center;   /* FIXED CENTER ALIGNMENT */
+align-items:center;
 text-align:center;
 }
 
 #itemImg{
-width:220px;
-height:220px;
+width:230px;
+height:230px;
 object-fit:contain;
-animation:drop .6s ease;
-}
-
-@keyframes drop{
-from{transform:translateY(-180px);opacity:0}
-to{transform:translateY(0);opacity:1}
 }
 
 #itemName{
-font-size:26px;
+font-size:28px;
 font-weight:bold;
 color:#E67E22;
-margin-top:8px;
+margin-top:10px;
 }
 
-/* OPTIONS */
+/* SEASONS */
 #options{
 position:absolute;
 bottom:20px;
@@ -111,15 +103,11 @@ text-align:center;
 cursor:pointer;
 }
 
-/* FIXED BIGGER SEASON IMAGES */
+/* BIG SEASON IMAGES */
 .option img{
-width:140px;   /* INCREASED SIZE */
-height:140px;  /* INCREASED SIZE */
+width:160px;
+height:160px;
 object-fit:contain;
-}
-
-.option img:active{
-transform:scale(0.95);
 }
 
 /* FEEDBACK */
@@ -155,10 +143,26 @@ font-size:18px;
 }
 
 /* END */
-#endScreen h1{color:#6A1B9A;}
-#finalScore{font-size:28px;font-weight:bold;color:#1B5E20;}
-#stars{font-size:40px;margin-top:10px;}
+#end{
+position:absolute;
+width:100%;
+height:100%;
+display:none;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+}
 
+#finalScore{
+font-size:28px;
+font-weight:bold;
+color:#1B5E20;
+}
+
+#stars{
+font-size:40px;
+margin-top:10px;
+}
 </style>
 </head>
 
@@ -179,7 +183,7 @@ Match the item with correct season
 <div id="scoreBox">⭐ <span id="score">0</span></div>
 
 <div id="itemBox">
-<img id="itemImg">
+<img id="itemImg" src="">
 <div id="itemName"></div>
 </div>
 
@@ -208,9 +212,9 @@ Match the item with correct season
 </div>
 
 <!-- END -->
-<div id="end" class="screen hidden">
-<h1>🎉 Great Job! 🎉</h1>
-<div>Score: <span id="finalScore"></span></div>
+<div id="end">
+<h1>🎉 Great Job!</h1>
+<div id="finalScore"></div>
 <div id="stars"></div>
 </div>
 
@@ -238,10 +242,9 @@ const items=[
 let gameItems=items.sort(()=>Math.random()-0.5);
 let i=0;
 let score=0;
-
-/* FIXED AUDIO AUTOPLAY */
 let musicStarted=false;
 
+/* FIX MUSIC */
 function startMusic(){
 if(!musicStarted){
 bgm.volume=0.3;
@@ -271,13 +274,11 @@ startGame
 },5000);
 
 function startGame(){
-showItem();
-
-/* FIX: ensure music starts after interaction */
 document.body.addEventListener("click",startMusic,{once:true});
+showItem();
 }
 
-/* RESET UI */
+/* RESET */
 function resetUI(){
 tick.style.display="none";
 cross.style.display="none";
@@ -285,6 +286,7 @@ msg.textContent="";
 tryAgain.style.display="none";
 }
 
+/* SHOW ITEM CENTER */
 function showItem(){
 if(i>=gameItems.length){
 endGame();
@@ -315,7 +317,7 @@ msg.textContent="Great Job!";
 msg.style.color="#2ECC71";
 
 score++;
-document.getElementById("score").textContent=score;
+scoreBox.innerHTML="⭐ "+score;
 
 setTimeout(()=>{
 i++;
@@ -350,7 +352,7 @@ msg.textContent="";
 function endGame(){
 
 game.classList.add("hidden");
-end.classList.remove("hidden");
+end.style.display="flex";
 
 finalScore.textContent=score+" / "+gameItems.length;
 
