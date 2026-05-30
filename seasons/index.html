@@ -6,6 +6,7 @@
 <title>Season Sorting Adventure</title>
 
 <style>
+
 *{
 margin:0;
 padding:0;
@@ -45,16 +46,15 @@ animation:fade 2s infinite;
 100%{opacity:.3}
 }
 
-/* TOP BAR */
+/* TOP */
 #topBar{
 position:absolute;
 top:10px;
 width:100%;
-display:flex;
-justify-content:center;
+text-align:center;
+font-size:20px;
 font-weight:bold;
 color:#6A1B9A;
-font-size:20px;
 }
 
 #scoreBox{
@@ -66,26 +66,27 @@ font-weight:bold;
 color:#1B5E20;
 }
 
-/* ITEM */
+/* ITEM CENTER FIXED */
 #itemBox{
 position:absolute;
-top:90px;
+top:80px;
 width:100%;
 display:flex;
-justify-content:center;
-text-align:center;
 flex-direction:column;
+justify-content:center;
+align-items:center;   /* FIXED CENTER ALIGNMENT */
+text-align:center;
 }
 
 #itemImg{
-width:200px;
-height:200px;
+width:220px;
+height:220px;
 object-fit:contain;
-animation:drop .7s ease;
+animation:drop .6s ease;
 }
 
 @keyframes drop{
-from{transform:translateY(-200px);opacity:0}
+from{transform:translateY(-180px);opacity:0}
 to{transform:translateY(0);opacity:1}
 }
 
@@ -93,7 +94,7 @@ to{transform:translateY(0);opacity:1}
 font-size:26px;
 font-weight:bold;
 color:#E67E22;
-margin-top:5px;
+margin-top:8px;
 }
 
 /* OPTIONS */
@@ -110,16 +111,15 @@ text-align:center;
 cursor:pointer;
 }
 
+/* FIXED BIGGER SEASON IMAGES */
 .option img{
-width:90px;
-height:90px;
+width:140px;   /* INCREASED SIZE */
+height:140px;  /* INCREASED SIZE */
 object-fit:contain;
 }
 
-.option div{
-font-size:16px;
-font-weight:bold;
-color:#4E342E;
+.option img:active{
+transform:scale(0.95);
 }
 
 /* FEEDBACK */
@@ -142,7 +142,6 @@ font-size:24px;
 font-weight:bold;
 }
 
-/* BUTTON */
 #tryAgain{
 display:none;
 position:absolute;
@@ -156,18 +155,9 @@ font-size:18px;
 }
 
 /* END */
-#endScreen h1{
-color:#6A1B9A;
-}
-#finalScore{
-font-size:28px;
-font-weight:bold;
-color:#1B5E20;
-}
-#stars{
-font-size:40px;
-margin-top:10px;
-}
+#endScreen h1{color:#6A1B9A;}
+#finalScore{font-size:28px;font-weight:bold;color:#1B5E20;}
+#stars{font-size:40px;margin-top:10px;}
 
 </style>
 </head>
@@ -203,17 +193,14 @@ Match the item with correct season
 
 <div class="option" onclick="check('summer')">
 <img src="assets/summer.png">
-<div>Summer</div>
 </div>
 
 <div class="option" onclick="check('winter')">
 <img src="assets/winter.png">
-<div>Winter</div>
 </div>
 
 <div class="option" onclick="check('rainy')">
 <img src="assets/rainy.png">
-<div>Rainy</div>
 </div>
 
 </div>
@@ -225,7 +212,6 @@ Match the item with correct season
 <h1>🎉 Great Job! 🎉</h1>
 <div>Score: <span id="finalScore"></span></div>
 <div id="stars"></div>
-<button onclick="location.reload()">Replay</button>
 </div>
 
 <audio id="bgm" src="assets/backgroundmusic.mp3" loop></audio>
@@ -234,7 +220,6 @@ Match the item with correct season
 
 <script>
 
-/* ITEMS */
 const items=[
 {name:"Sunglasses",img:"assets/sunglasses.png",season:"summer"},
 {name:"Cap",img:"assets/cap.png",season:"summer"},
@@ -254,6 +239,17 @@ let gameItems=items.sort(()=>Math.random()-0.5);
 let i=0;
 let score=0;
 
+/* FIXED AUDIO AUTOPLAY */
+let musicStarted=false;
+
+function startMusic(){
+if(!musicStarted){
+bgm.volume=0.3;
+bgm.play().catch(()=>{});
+musicStarted=true;
+}
+}
+
 /* SPEECH */
 function speak(text,cb){
 let msg=new SpeechSynthesisUtterance(text);
@@ -268,16 +264,25 @@ intro.classList.add("hidden");
 game.classList.remove("hidden");
 
 speak(
-"Hello little friend. Let us learn about seasons. Match each item with the correct season.",
+"Hello little friend. Match each item with correct season.",
 startGame
 );
 
 },5000);
 
 function startGame(){
-bgm.volume=0.3;
-bgm.play().catch(()=>{});
 showItem();
+
+/* FIX: ensure music starts after interaction */
+document.body.addEventListener("click",startMusic,{once:true});
+}
+
+/* RESET UI */
+function resetUI(){
+tick.style.display="none";
+cross.style.display="none";
+msg.textContent="";
+tryAgain.style.display="none";
 }
 
 function showItem(){
@@ -291,14 +296,6 @@ resetUI();
 let it=gameItems[i];
 itemImg.src=it.img;
 itemName.textContent=it.name;
-}
-
-/* RESET */
-function resetUI(){
-tick.style.display="none";
-cross.style.display="none";
-msg.textContent="";
-tryAgain.style.display="none";
 }
 
 /* CHECK */
@@ -362,7 +359,7 @@ else if(score>=7)stars.textContent="⭐⭐⭐⭐";
 else if(score>=5)stars.textContent="⭐⭐⭐";
 else stars.textContent="⭐⭐";
 
-speak("Wonderful. You completed the season game.");
+speak("Wonderful. You completed the game.");
 }
 
 </script>
