@@ -1,405 +1,420 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Season Sorting Adventure</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Season Sorting Adventure</title>
 
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-html,body{
-width:100%;
-height:100%;
-overflow:hidden;
-background:linear-gradient(180deg,#FFF7E6,#E8F6F3);
-}
-
-/* INTRO */
-.screen{
-position:absolute;
-width:100%;
-height:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-}
-
-.hidden{display:none;}
-
-#logo{
-width:220px;
-animation:fade 2s infinite;
-}
-
-@keyframes fade{
-0%{opacity:.3}
-50%{opacity:1}
-100%{opacity:.3}
-}
-
-/* TOP BAR */
-#topBar{
-position:absolute;
-top:10px;
-width:100%;
-text-align:center;
-font-size:20px;
-font-weight:bold;
-color:#6A1B9A;
-}
-
-#scoreBox{
-position:absolute;
-top:10px;
-right:15px;
-font-size:20px;
-font-weight:bold;
-color:#1B5E20;
-}
-
-/* ITEM CENTER FIXED */
-#itemBox{
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-55%);
-display:flex;
-flex-direction:column;
-align-items:center;
-text-align:center;
-}
-
-#itemImg{
-width:230px;
-height:230px;
-object-fit:contain;
-}
-
-#itemName{
-font-size:28px;
-font-weight:bold;
-color:#E67E22;
-margin-top:10px;
-}
-
-/* SEASONS */
-#options{
-position:absolute;
-bottom:20px;
-width:100%;
-display:flex;
-justify-content:space-around;
-}
-
-.option{
-text-align:center;
-cursor:pointer;
-}
-
-/* BIG SEASON IMAGES */
-.option img{
-width:160px;
-height:160px;
-object-fit:contain;
-}
-
-/* FEEDBACK */
-.feedback{
-position:absolute;
-top:45%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:120px;
-display:none;
-}
-
-#tick{color:#2ECC71;}
-#cross{color:#E74C3C;}
-
-#msg{
-position:absolute;
-top:60%;
-font-size:24px;
-font-weight:bold;
-}
-
-#tryAgain{
-display:none;
-position:absolute;
-top:68%;
-padding:12px 25px;
-border:none;
-border-radius:20px;
-background:#F5B041;
-color:white;
-font-size:18px;
-}
-
-/* END */
-#end{
-position:absolute;
-width:100%;
-height:100%;
-display:none;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-}
-
-#finalScore{
-font-size:28px;
-font-weight:bold;
-color:#1B5E20;
-}
-
-#stars{
-font-size:40px;
-margin-top:10px;
-}
-</style>
-</head>
-
-<body>
-
-<!-- INTRO -->
-<div id="intro" class="screen">
-<img id="logo" src="assets/innovine-logo.png">
-</div>
-
-<!-- GAME -->
-<div id="game" class="screen hidden">
-
-<div id="topBar">
-Match the item with correct season
-</div>
-
-<div id="scoreBox">⭐ <span id="score">0</span></div>
-
-<div id="itemBox">
-<img id="itemImg" src="">
-<div id="itemName"></div>
-</div>
-
-<div id="tick" class="feedback">✅</div>
-<div id="cross" class="feedback">❌</div>
-
-<div id="msg"></div>
-<button id="tryAgain">Try Again</button>
-
-<div id="options">
-
-<div class="option" onclick="check('summer')">
-<img src="assets/summer.png">
-</div>
-
-<div class="option" onclick="check('winter')">
-<img src="assets/winter.png">
-</div>
-
-<div class="option" onclick="check('rainy')">
-<img src="assets/rainy.png">
-</div>
-
-</div>
-
-</div>
-
-<!-- END -->
-<div id="end">
-<h1>🎉 Great Job!</h1>
-<div id="finalScore"></div>
-<div id="stars"></div>
-</div>
-
-<audio id="bgm" src="assets/backgroundmusic.mp3" loop></audio>
-<audio id="correct" src="assets/correct.mp3"></audio>
-<audio id="wrong" src="assets/wrong.mp3"></audio>
-
-<script>
-
-const items=[
-
-{name:"Cap",img:"assets/cap.png",season:"summer"},
-{name:"Hat",img:"assets/hat.png",season:"summer"},
-{name:"Slipper",img:"assets/slipper.png",season:"summer"},
-
-{name:"Sweater",img:"assets/sweater.png",season:"winter"},
-{name:"Woollen Cap",img:"assets/woollen-cap.png",season:"winter"},
-{name:"Hand Gloves",img:"assets/hand-gloves.png",season:"winter"},
-
-{name:"Umbrella",img:"assets/umbrella.png",season:"rainy"},
-{name:"Gumboots",img:"assets/gumboots.png",season:"rainy"},
-{name:"Raincoat",img:"assets/raincoat.png",season:"rainy"}
-
-
-];
-
-let gameItems=[...items];
-
-gameItems.sort(
-    ()=>Math.random()-0.5
-);
-let i=0;
-let score=0;
-let musicStarted=false;
-
-/* FIX MUSIC */
-function startMusic(){
-if(!musicStarted){
-bgm.volume=0.3;
-bgm.play().catch(()=>{});
-musicStarted=true;
-}
-}
-
-/* SPEECH */
-function speak(text,cb){
-let msg=new SpeechSynthesisUtterance(text);
-msg.rate=0.85;
-msg.onend=cb;
-speechSynthesis.speak(msg);
-}
-
-/* START */
-setTimeout(()=>{
-intro.classList.add("hidden");
-game.classList.remove("hidden");
-
-speak(
-"Hello little friend. Match each item with correct season.",
-startGame
-);
-
-},5000);
-
-function startGame(){
-document.body.addEventListener("click",startMusic,{once:true});
-showItem();
-}
-
-/* RESET */
-function resetUI(){
-tick.style.display="none";
-cross.style.display="none";
-msg.textContent="";
-tryAgain.style.display="none";
-}
-
-/* SHOW ITEM CENTER */
-function showItem(){
-
-    if(i >= gameItems.length){
-
-        endGame();
-        return;
-
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
-    resetUI();
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, #FFF7E6, #E8F6F3);
+    }
 
-    let it = gameItems[i];
+    .screen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
 
-    itemName.textContent = it.name;
+    .hidden {
+      display: none;
+    }
 
-    itemImg.onload = function(){
+    #logo {
+      width: 220px;
+      animation: fade 2s infinite;
+    }
 
-        console.log(
-            "Loaded:",
-            it.img
-        );
+    @keyframes fade {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
 
-    };
+    #topBar {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #6A1B9A;
+    }
 
-    itemImg.onerror = function(){
+    #scoreBox {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #1B5E20;
+    }
 
-        console.log(
-            "Missing image:",
-            it.img
-        );
+    #itemBox {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
 
-        i++;
+    #itemImg {
+      width: 230px;
+      height: 230px;
+      object-fit: contain;
+    }
 
+    #itemName {
+      font-size: 28px;
+      font-weight: bold;
+      color: #E67E22;
+      margin-top: 10px;
+    }
+
+    #options {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      padding: 0 10px;
+    }
+
+    .option {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .option img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .feedback {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 120px;
+      display: none;
+    }
+
+    #tick {
+      color: #2ECC71;
+    }
+
+    #cross {
+      color: #E74C3C;
+    }
+
+    #msg {
+      position: absolute;
+      top: 60%;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    #tryAgain {
+      display: none;
+      position: absolute;
+      top: 68%;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 20px;
+      background: #F5B041;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #end {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    #finalScore {
+      font-size: 28px;
+      font-weight: bold;
+      color: #1B5E20;
+      margin-top: 10px;
+    }
+
+    #stars {
+      font-size: 40px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- INTRO -->
+  <div id="intro" class="screen">
+    <img id="logo" src="assets/innovine-logo.png" alt="Logo" />
+  </div>
+
+  <!-- GAME -->
+  <div id="game" class="screen hidden">
+    <div id="topBar">Match the item with correct season</div>
+    <div id="scoreBox">⭐ <span id="score">0</span></div>
+
+    <div id="itemBox">
+      <img id="itemImg" src="" alt="Item" />
+      <div id="itemName"></div>
+    </div>
+
+    <div id="tick" class="feedback">✅</div>
+    <div id="cross" class="feedback">❌</div>
+
+    <div id="msg"></div>
+    <button id="tryAgain">Try Again</button>
+
+    <div id="options">
+      <div class="option" data-season="summer">
+        <img src="assets/summer.png" alt="Summer" />
+      </div>
+
+      <div class="option" data-season="winter">
+        <img src="assets/winter.png" alt="Winter" />
+      </div>
+
+      <div class="option" data-season="rainy">
+        <img src="assets/rainy.png" alt="Rainy" />
+      </div>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="end">
+    <h1>🎉 Great Job!</h1>
+    <div id="finalScore"></div>
+    <div id="stars"></div>
+  </div>
+
+  <audio id="bgm" src="assets/backgroundmusic.mp3" loop></audio>
+  <audio id="correct" src="assets/correct.mp3"></audio>
+  <audio id="wrong" src="assets/wrong.mp3"></audio>
+
+  <script>
+    const items = [
+      { name: "Cap", img: "assets/cap.png", season: "summer" },
+      { name: "Hat", img: "assets/hat.png", season: "summer" },
+      { name: "Slipper", img: "assets/slipper.png", season: "summer" },
+
+      { name: "Sweater", img: "assets/sweater.png", season: "winter" },
+      { name: "Woollen Cap", img: "assets/woollen-cap.png", season: "winter" },
+      { name: "Hand Gloves", img: "assets/hand-gloves.png", season: "winter" },
+
+      { name: "Umbrella", img: "assets/umbrella.png", season: "rainy" },
+      { name: "Gumboots", img: "assets/gumboots.png", season: "rainy" },
+      { name: "Raincoat", img: "assets/raincoat.png", season: "rainy" }
+    ];
+
+    let gameItems = [...items];
+    let currentIndex = 0;
+    let score = 0;
+    let musicStarted = false;
+    let gameLocked = false;
+
+    const intro = document.getElementById("intro");
+    const game = document.getElementById("game");
+    const end = document.getElementById("end");
+    const itemImg = document.getElementById("itemImg");
+    const itemName = document.getElementById("itemName");
+    const scoreText = document.getElementById("score");
+    const tick = document.getElementById("tick");
+    const cross = document.getElementById("cross");
+    const msg = document.getElementById("msg");
+    const tryAgain = document.getElementById("tryAgain");
+    const finalScore = document.getElementById("finalScore");
+    const stars = document.getElementById("stars");
+    const bgm = document.getElementById("bgm");
+    const correct = document.getElementById("correct");
+    const wrong = document.getElementById("wrong");
+    const options = document.querySelectorAll(".option");
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    shuffleArray(gameItems);
+
+    function startMusic() {
+      if (!musicStarted) {
+        bgm.volume = 0.3;
+        bgm.play().catch(function () {});
+        musicStarted = true;
+      }
+    }
+
+    function speak(text, callback) {
+      if (!("speechSynthesis" in window)) {
+        if (typeof callback === "function") {
+          callback();
+        }
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.85;
+      utterance.onend = function () {
+        if (typeof callback === "function") {
+          callback();
+        }
+      };
+
+      utterance.onerror = function () {
+        if (typeof callback === "function") {
+          callback();
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function resetUI() {
+      tick.style.display = "none";
+      cross.style.display = "none";
+      msg.textContent = "";
+      tryAgain.style.display = "none";
+    }
+
+    function showItem() {
+      if (currentIndex >= gameItems.length) {
+        endGame();
+        return;
+      }
+
+      resetUI();
+      gameLocked = false;
+
+      const currentItem = gameItems[currentIndex];
+      itemName.textContent = currentItem.name;
+
+      itemImg.onload = function () {
+        console.log("Loaded:", currentItem.img);
+      };
+
+      itemImg.onerror = function () {
+        console.log("Missing image:", currentItem.img);
+        currentIndex++;
         showItem();
+      };
 
-    };
+      itemImg.src = currentItem.img;
+    }
 
-    itemImg.src = it.img;
+    function check(selectedSeason) {
+      if (gameLocked) return;
+      if (currentIndex >= gameItems.length) return;
 
-}itemName.textContent=it.name;
-}
+      const currentItem = gameItems[currentIndex];
+      resetUI();
 
-/* CHECK */
-function check(season){
+      if (selectedSeason === currentItem.season) {
+        gameLocked = true;
 
-let it=gameItems[i];
+        correct.currentTime = 0;
+        correct.play().catch(function () {});
 
-resetUI();
+        tick.style.display = "block";
+        msg.textContent = "Great Job!";
+        msg.style.color = "#2ECC71";
 
-if(season===it.season){
+        score++;
+        scoreText.textContent = score;
 
-correct.currentTime=0;
-correct.play();
+        setTimeout(function () {
+          currentIndex++;
+          showItem();
+        }, 1200);
+      } else {
+        wrong.currentTime = 0;
+        wrong.play().catch(function () {});
 
-tick.style.display="block";
-msg.textContent="Great Job!";
-msg.style.color="#2ECC71";
+        cross.style.display = "block";
+        msg.textContent = "Try Again";
+        msg.style.color = "#E74C3C";
 
-score++;
-scoreBox.innerHTML="⭐ "+score;
+        tryAgain.style.display = "block";
+        speak("Try again");
+      }
+    }
 
-setTimeout(()=>{
-i++;
-showItem();
-},1200);
+    tryAgain.addEventListener("click", function () {
+      cross.style.display = "none";
+      tryAgain.style.display = "none";
+      msg.textContent = "";
+    });
 
-}else{
+    function endGame() {
+      game.classList.add("hidden");
+      end.style.display = "flex";
 
-wrong.currentTime=0;
-wrong.play();
+      finalScore.textContent = score + " / " + gameItems.length;
 
-cross.style.display="block";
-msg.textContent="Try Again";
-msg.style.color="#E74C3C";
+      if (score >= 9) {
+        stars.textContent = "⭐⭐⭐⭐⭐";
+      } else if (score >= 7) {
+        stars.textContent = "⭐⭐⭐⭐";
+      } else if (score >= 5) {
+        stars.textContent = "⭐⭐⭐";
+      } else {
+        stars.textContent = "⭐⭐";
+      }
 
-tryAgain.style.display="block";
+      speak("Wonderful. You completed the game.");
+    }
 
-speak("Try again");
+    options.forEach(function (option) {
+      option.addEventListener("click", function () {
+        startMusic();
+        const season = option.getAttribute("data-season");
+        check(season);
+      });
+    });
 
-}
+    setTimeout(function () {
+      intro.classList.add("hidden");
+      game.classList.remove("hidden");
 
-}
+      speak("Hello little friend. Match each item with the correct season.", function () {
+        showItem();
+      });
+    }, 5000);
 
-/* TRY AGAIN */
-tryAgain.onclick=()=>{
-cross.style.display="none";
-tryAgain.style.display="none";
-msg.textContent="";
-};
-
-/* END */
-function endGame(){
-
-game.classList.add("hidden");
-end.style.display="flex";
-
-finalScore.textContent=score+" / "+gameItems.length;
-
-if(score>=9)stars.textContent="⭐⭐⭐⭐⭐";
-else if(score>=7)stars.textContent="⭐⭐⭐⭐";
-else if(score>=5)stars.textContent="⭐⭐⭐";
-else stars.textContent="⭐⭐";
-
-speak("Wonderful. You completed the game.");
-}
-
-</script>
-
+    document.body.addEventListener("click", startMusic, { once: true });
+  </script>
 </body>
 </html>
