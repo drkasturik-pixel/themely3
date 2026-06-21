@@ -238,9 +238,14 @@ const items=[
 {name:"Gumboots",img:"assets/gumboots.png",season:"rainy"},
 {name:"Raincoat",img:"assets/raincoat.png",season:"rainy"}
 
+
 ];
 
-let gameItems=items.sort(()=>Math.random()-0.5);
+let gameItems=[...items];
+
+gameItems.sort(
+    ()=>Math.random()-0.5
+);
 let i=0;
 let score=0;
 let musicStarted=false;
@@ -289,16 +294,45 @@ tryAgain.style.display="none";
 
 /* SHOW ITEM CENTER */
 function showItem(){
-if(i>=gameItems.length){
-endGame();
-return;
-}
 
-resetUI();
+    if(i >= gameItems.length){
 
-let it=gameItems[i];
-itemImg.src=it.img;
-itemName.textContent=it.name;
+        endGame();
+        return;
+
+    }
+
+    resetUI();
+
+    let it = gameItems[i];
+
+    itemName.textContent = it.name;
+
+    itemImg.onload = function(){
+
+        console.log(
+            "Loaded:",
+            it.img
+        );
+
+    };
+
+    itemImg.onerror = function(){
+
+        console.log(
+            "Missing image:",
+            it.img
+        );
+
+        i++;
+
+        showItem();
+
+    };
+
+    itemImg.src = it.img;
+
+}itemName.textContent=it.name;
 }
 
 /* CHECK */
